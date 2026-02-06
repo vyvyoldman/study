@@ -15,7 +15,7 @@ CERT_PATH="$WORK_DIR/cert.pem"
 KEY_PATH="$WORK_DIR/key.pem"
 SERVICE_PATH="/etc/systemd/system/sing-box-hy2.service"
 
-PORT="${PORT:-443}"
+PORT="${PORT:1234}"
 PASSWORD="${PASSWORD:-}"
 CERT_CN="${CERT_CN:-}"
 
