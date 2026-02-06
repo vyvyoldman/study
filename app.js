@@ -1,6 +1,5 @@
 const express = require("express");
 const { spawn, execSync } = require("child_process");
-const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const os = require("os");
@@ -13,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 const UUID = process.env.UUID || '9afd1229-b893-40c1-84dd-51e7ce204913'; // 请修改为您的 UUID
 const WS_PATH = process.env.WS_PATH || '/vless';
 // 隧道参数
-const ARGO_TOKEN = process.env.ARGO_TOKEN || ''; // 填入 Token 即启用固定隧道，留空则为临时隧道
-const ARGO_DOMAIN = process.env.ARGO_DOMAIN || ''; // 固定隧道绑定的域名 (仅用于显示订阅，不参与运行)
+const ARGO_TOKEN = process.env.ARGO_TOKEN || ""; // 填入 Token 即启用固定隧道，留空则为临时隧道
+const ARGO_DOMAIN = process.env.ARGO_DOMAIN || ""; // 固定隧道绑定的域名 (填入后生成固定节点链接)
 
 // ================= 运行时配置 =================
 const WORK_DIR = path.join(__dirname, 'bin');
@@ -130,9 +129,13 @@ async function startServices() {
         cfArgs = ['tunnel', 'run', '--token', ARGO_TOKEN];
         
         // 固定隧道直接生成链接
-        const domain = ARGO_DOMAIN || "your-custom-domain.com";
-        sharedUrl = `vless://${UUID}@${domain}:443?encryption=none&security=tls&type=ws&host=${domain}&path=${encodeURIComponent(WS_PATH)}#Fixed-Tunnel`;
-        console.log(`\n>>> 固定节点链接:\n${sharedUrl}\n`);
+        if (ARGO_DOMAIN) {
+            const domain = ARGO_DOMAIN;
+            sharedUrl = `vless://${UUID}@${domain}:443?encryption=none&security=tls&type=ws&host=${domain}&sni=${domain}&path=${encodeURIComponent(WS_PATH)}#Fixed-Tunnel`;
+            console.log(`\n>>> 固定节点链接:\n${sharedUrl}\n`);
+        } else {
+            console.log("[Warn] ARGO_TOKEN 已设置，但 ARGO_DOMAIN 为空。请设置域名以生成固定节点链接。");
+        }
     } else {
         // [临时隧道模式]
         console.log("[Mode] Temporary Tunnel (Quick Tunnel)");
@@ -149,7 +152,7 @@ async function startServices() {
         if (match && !ARGO_TOKEN) {
             const domain = match[1];
             console.log(`[Success] Domain allocated: ${domain}`);
-            sharedUrl = `vless://${UUID}@${domain}:443?encryption=none&security=tls&type=ws&host=${domain}&path=${encodeURIComponent(WS_PATH)}#Temp-Tunnel`;
+            sharedUrl = `vless://${UUID}@${domain}:443?encryption=none&security=tls&type=ws&host=${domain}&sni=${domain}&path=${encodeURIComponent(WS_PATH)}#Temp-Tunnel`;
             console.log(`\n>>> 临时节点链接:\n${sharedUrl}\n`);
         }
     });
