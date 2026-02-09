@@ -15,16 +15,12 @@ CERT_PATH="$WORK_DIR/cert.pem"
 KEY_PATH="$WORK_DIR/key.pem"
 SERVICE_PATH="/etc/systemd/system/sing-box-hy2.service"
 
-PORT="1234"
+PORT="${PORT:-1234}"
 PASSWORD="${PASSWORD:-}"
 CERT_CN="${CERT_CN:-}"
 
 if [ -z "$PASSWORD" ]; then
     PASSWORD="$(openssl rand -hex 16)"
-fi
-
-if [ -z "$CERT_CN" ]; then
-    CERT_CN="$(curl -fsSL https://api.ipify.org || hostname -I | awk '{print $1}')"
 fi
 
 install_deps() {
@@ -69,7 +65,7 @@ generate_cert() {
 
 generate_config() {
     mkdir -p "$WORK_DIR"
-    cat > "$CONFIG_PATH" <<'CONFIG'
+    cat > "$CONFIG_PATH" <<CONFIG
 {
   "log": {
     "level": "info",
@@ -112,13 +108,6 @@ generate_config() {
   ]
 }
 CONFIG
-
-    sed -i \
-        -e "s|${PORT}|$PORT|g" \
-        -e "s|${PASSWORD}|$PASSWORD|g" \
-        -e "s|${CERT_PATH}|$CERT_PATH|g" \
-        -e "s|${KEY_PATH}|$KEY_PATH|g" \
-        "$CONFIG_PATH"
 }
 
 create_service() {
@@ -145,6 +134,10 @@ SERVICE
 }
 
 install_deps
+
+if [ -z "$CERT_CN" ]; then
+    CERT_CN="$(curl -fsSL https://api.ipify.org || hostname -I | awk '{print $1}')"
+fi
 
 download_sing_box
 
