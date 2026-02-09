@@ -14,10 +14,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/vyvyoldman/study/main/setup-hy
 
 示例：
 
-```bash
-export PORT=443
-export PASSWORD="your-password"
-export CERT_CN="your.domain.com"
+
 bash <(curl -Ls https://raw.githubusercontent.com/vyvyoldman/study/main/setup-hy2.sh)
 ```
 
